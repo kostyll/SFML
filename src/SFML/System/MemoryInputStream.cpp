@@ -22,34 +22,80 @@
 //
 ////////////////////////////////////////////////////////////
 
-#ifndef SFML_AUDIO_HPP
-#define SFML_AUDIO_HPP
-
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-
-#include <SFML/System.hpp>
-#include <SFML/Audio/Listener.hpp>
-#include <SFML/Audio/Music.hpp>
-#include <SFML/Audio/Sound.hpp>
-#include <SFML/Audio/SoundBuffer.hpp>
-#include <SFML/Audio/SoundBufferRecorder.hpp>
-#include <SFML/Audio/InputSoundFile.hpp>
-#include <SFML/Audio/OutputSoundFile.hpp>
-#include <SFML/Audio/SoundFileFactory.hpp>
-#include <SFML/Audio/SoundFileReader.hpp>
-#include <SFML/Audio/SoundFileWriter.hpp>
-#include <SFML/Audio/SoundRecorder.hpp>
-#include <SFML/Audio/SoundStream.hpp>
+#include <SFML/System/MemoryInputStream.hpp>
+#include <cstring>
 
 
-#endif // SFML_AUDIO_HPP
+namespace sf
+{
+////////////////////////////////////////////////////////////
+MemoryInputStream::MemoryInputStream() :
+m_data  (NULL),
+m_size  (0),
+m_offset(0)
+{
+}
+
 
 ////////////////////////////////////////////////////////////
-/// \defgroup audio Audio module
-///
-/// Sounds, streaming (musics or custom sources), recording,
-/// spatialization.
-/// 
+void MemoryInputStream::open(const void* data, std::size_t sizeInBytes)
+{
+    m_data = static_cast<const char*>(data);
+    m_size = sizeInBytes;
+    m_offset = 0;
+}
+
+
 ////////////////////////////////////////////////////////////
+Int64 MemoryInputStream::read(void* data, Int64 size)
+{
+    if (!m_data)
+        return -1;
+
+    Int64 endPosition = m_offset + size;
+    Int64 count = endPosition <= m_size ? size : m_size - m_offset;
+
+    if (count > 0)
+    {
+        std::memcpy(data, m_data + m_offset, static_cast<std::size_t>(count));
+        m_offset += count;
+    }
+
+    return count;
+}
+
+
+////////////////////////////////////////////////////////////
+Int64 MemoryInputStream::seek(Int64 position)
+{
+    if (!m_data)
+        return -1;
+
+    m_offset = position < m_size ? position : m_size;
+    return m_offset;
+}
+
+
+////////////////////////////////////////////////////////////
+Int64 MemoryInputStream::tell()
+{
+    if (!m_data)
+        return -1;
+
+    return m_offset;
+}
+
+
+////////////////////////////////////////////////////////////
+Int64 MemoryInputStream::getSize()
+{
+    if (!m_data)
+        return -1;
+
+    return m_size;
+}
+
+} // namespace sf

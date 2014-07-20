@@ -22,34 +22,55 @@
 //
 ////////////////////////////////////////////////////////////
 
-#ifndef SFML_AUDIO_HPP
-#define SFML_AUDIO_HPP
-
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-
-#include <SFML/System.hpp>
-#include <SFML/Audio/Listener.hpp>
-#include <SFML/Audio/Music.hpp>
-#include <SFML/Audio/Sound.hpp>
-#include <SFML/Audio/SoundBuffer.hpp>
-#include <SFML/Audio/SoundBufferRecorder.hpp>
-#include <SFML/Audio/InputSoundFile.hpp>
-#include <SFML/Audio/OutputSoundFile.hpp>
-#include <SFML/Audio/SoundFileFactory.hpp>
-#include <SFML/Audio/SoundFileReader.hpp>
-#include <SFML/Audio/SoundFileWriter.hpp>
-#include <SFML/Audio/SoundRecorder.hpp>
-#include <SFML/Audio/SoundStream.hpp>
+#include <SFML/System/FileInputStream.hpp>
 
 
-#endif // SFML_AUDIO_HPP
+namespace sf
+{
+////////////////////////////////////////////////////////////
+bool FileInputStream::open(const std::string& filename)
+{
+    m_file.open(filename.c_str(), std::ios::binary);
+    return m_file.good();
+}
+
 
 ////////////////////////////////////////////////////////////
-/// \defgroup audio Audio module
-///
-/// Sounds, streaming (musics or custom sources), recording,
-/// spatialization.
-/// 
+Int64 FileInputStream::read(void* data, Int64 size)
+{
+    m_file.read(static_cast<char*>(data), size);
+    return m_file.gcount();
+}
+
+
 ////////////////////////////////////////////////////////////
+Int64 FileInputStream::seek(Int64 position)
+{
+    if (m_file.eof())
+        m_file.clear();
+    m_file.seekg(position);
+    return tell();
+}
+
+
+////////////////////////////////////////////////////////////
+Int64 FileInputStream::tell()
+{
+    return m_file.tellg();
+}
+
+
+////////////////////////////////////////////////////////////
+Int64 FileInputStream::getSize()
+{
+    std::ifstream::pos_type pos = m_file.tellg();
+    m_file.seekg(0, std::ios::end);
+    std::ifstream::pos_type size = m_file.tellg();
+    m_file.seekg(pos);
+    return size;
+}
+
+} // namespace sf
